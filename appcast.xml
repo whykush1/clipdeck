@@ -3,12 +3,12 @@
     <channel>
         <title>ClipDeck</title>
         <item>
-            <title>1.0</title>
-            <pubDate>Wed, 27 May 2026 18:28:38 +0530</pubDate>
-            <sparkle:version>1</sparkle:version>
-            <sparkle:shortVersionString>1.0</sparkle:shortVersionString>
+            <title>1.1</title>
+            <pubDate>Sat, 06 Jun 2026 11:21:46 +0530</pubDate>
+            <sparkle:version>2</sparkle:version>
+            <sparkle:shortVersionString>1.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/whykush1/clipdeck/releases/download/v1.0/ClipDeck-1.0.zip" length="8773104" type="application/octet-stream" sparkle:edSignature="2lVIe1c7BjjdHAjlKMnPiIYglI3Gj/eJrecTqrbHewltR6GcbjGWgI2OrHPkuvL5V4hpVhB/ma5WVcppO6ZXDg=="/>
+            <enclosure url="https://raw.githubusercontent.com/whykush1/clipdeck/main/ClipDeck.dmg" length="6676183" type="application/octet-stream" sparkle:edSignature="pHqspk0Nq57k7ItSv4nRGapiUY6u4cOY14bWEZR6eSlcKGfSfgBSZfV9j7tpEv2gZFa6oXYj1qfICLosRT19Bg=="/>
         </item>
     </channel>
 </rss>
