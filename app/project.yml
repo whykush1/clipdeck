@@ -1,0 +1,20 @@
+name: ClipDeck
+options:
+  bundleIdPrefix: dev.pythogen
+packages:
+  KeyboardShortcuts:
+    url: https://github.com/sindresorhus/KeyboardShortcuts
+    from: 1.16.1
+targets:
+  ClipDeck:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources: [Sources]
+    dependencies:
+      - package: KeyboardShortcuts
+    info:
+      path: Sources/Info.plist
+      properties:
+        LSUIElement: true
+        NSPrincipalClass: NSApplication
