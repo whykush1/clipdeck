@@ -26,33 +26,32 @@ class StorageManager {
     }
     
     var historyFileURL: URL {
+        appSupportDirectory.appendingPathComponent("history.json")
+    }
+    
+    var oldEncryptedHistoryFileURL: URL {
         appSupportDirectory.appendingPathComponent("history.enc")
     }
     
     func saveHistory(_ items: [ClipboardItem]) {
         do {
             let data = try JSONEncoder().encode(items)
-            let key = KeychainHelper.shared.getEncryptionKey()
-            let sealedBox = try AES.GCM.seal(data, using: key)
-            if let encryptedData = sealedBox.combined {
-                try encryptedData.write(to: historyFileURL)
-            }
+            try data.write(to: historyFileURL)
         } catch {
-            print("Failed to encrypt and save history: \(error)")
+            print("Failed to save history: \(error)")
         }
     }
     
     func loadHistory() -> [ClipboardItem] {
-        guard let encryptedData = try? Data(contentsOf: historyFileURL) else {
-            // Fallback for migration from unencrypted history
-            let oldURL = appSupportDirectory.appendingPathComponent("history.json")
-            if let oldData = try? Data(contentsOf: oldURL) {
-                if let items = try? JSONDecoder().decode([ClipboardItem].self, from: oldData) {
-                    try? FileManager.default.removeItem(at: oldURL)
-                    saveHistory(items)
-                    return items
-                }
+        // Try to load new unencrypted format first
+        if let data = try? Data(contentsOf: historyFileURL) {
+            if let items = try? JSONDecoder().decode([ClipboardItem].self, from: data) {
+                return items
             }
+        }
+        
+        // Fallback: migrate from old encrypted format
+        guard let encryptedData = try? Data(contentsOf: oldEncryptedHistoryFileURL) else {
             return []
         }
         
@@ -60,12 +59,17 @@ class StorageManager {
             let key = KeychainHelper.shared.getEncryptionKey()
             let sealedBox = try AES.GCM.SealedBox(combined: encryptedData)
             let decryptedData = try AES.GCM.open(sealedBox, using: key)
-            let items = try JSONDecoder().decode([ClipboardItem].self, from: decryptedData)
-            return items
+            if let items = try? JSONDecoder().decode([ClipboardItem].self, from: decryptedData) {
+                // Successfully decrypted, so we save to new format and delete old encrypted file
+                saveHistory(items)
+                try? fileManager.removeItem(at: oldEncryptedHistoryFileURL)
+                return items
+            }
         } catch {
-            print("Failed to decrypt history: \(error)")
-            return []
+            print("Failed to decrypt history during migration: \(error)")
         }
+        
+        return []
     }
     
     func saveImage(_ data: Data, id: UUID) -> String? {

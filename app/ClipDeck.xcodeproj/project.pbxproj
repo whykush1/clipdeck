@@ -14,6 +14,7 @@
 		A84369F5277621AD107ECBCE /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D756647685B908ACB78F540B /* OnboardingView.swift */; };
 		B4FE9B6FD62AD92D39D673AF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685BDA17574AFA367904BB03 /* SettingsView.swift */; };
 		C0DE552C25775D922C970346 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91DE7ECA35EA1DEE6D5EC0C8 /* ContentView.swift */; };
+		D01CCABCDDC4106CA2E417A4 /* CopySound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 3A0A5F553C9EA8BFE6B92F69 /* CopySound.mp3 */; };
 		ECBD220DE2F64B4BC8956A7A /* ClipboardItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 081B7DF67524502289F5F022 /* ClipboardItem.swift */; };
 		F399E8C0E37D0809C11CBFA7 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 16A23A16E4E0CC0BA078C34F /* Sparkle */; };
 		FCF50DC95251026290B96171 /* ClipDeckApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B1A0F4B8E15C2EFD51E93B /* ClipDeckApp.swift */; };
@@ -21,6 +22,7 @@
 
 /* Begin PBXFileReference section */
 		081B7DF67524502289F5F022 /* ClipboardItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardItem.swift; sourceTree = "<group>"; };
+		3A0A5F553C9EA8BFE6B92F69 /* CopySound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = CopySound.mp3; sourceTree = "<group>"; };
 		5F57CC0EE83C28C1DC718B81 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		685BDA17574AFA367904BB03 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6C0C5CA58E648232811B68A6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -53,6 +55,7 @@
 				93CFA0EEBB9F086E2BB9E3FB /* ClipboardManager.swift */,
 				F7B1A0F4B8E15C2EFD51E93B /* ClipDeckApp.swift */,
 				91DE7ECA35EA1DEE6D5EC0C8 /* ContentView.swift */,
+				3A0A5F553C9EA8BFE6B92F69 /* CopySound.mp3 */,
 				5F57CC0EE83C28C1DC718B81 /* Info.plist */,
 				D756647685B908ACB78F540B /* OnboardingView.swift */,
 				685BDA17574AFA367904BB03 /* SettingsView.swift */,
@@ -109,6 +112,8 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
 			};
 			buildConfigurationList = 7D957A5E6E2795CC449A4ADA /* Build configuration list for PBXProject "ClipDeck" */;
 			developmentRegion = en;
@@ -139,6 +144,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				777E10F4C188798C4C8F98D3 /* Assets.xcassets in Resources */,
+				D01CCABCDDC4106CA2E417A4 /* CopySound.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -348,7 +354,7 @@
 			repositoryURL = "https://github.com/sparkle-project/Sparkle";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.6.4;
+				minimumVersion = 2.9.2;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

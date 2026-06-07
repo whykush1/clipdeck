@@ -82,6 +82,13 @@ struct SettingsView: View {
                 Toggle("Ignore Images", isOn: $ignoreImages)
                 Toggle("Ignore Files", isOn: $ignoreFiles)
                 
+                Divider()
+                
+                Button("Check for Updates...") {
+                    NotificationCenter.default.post(name: NSNotification.Name("CheckForUpdates"), object: nil)
+                }
+                .padding(.vertical, 4)
+                
                 Text("Changes to the history limit take effect immediately.")
                     .font(.caption)
                     .foregroundColor(.secondary)

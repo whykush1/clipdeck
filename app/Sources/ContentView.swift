@@ -193,6 +193,17 @@ struct ClipboardItemView: View {
         )
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
         .contextMenu {
+            Button("Paste") {
+                clipboardManager.pasteItem(item)
+            }
+            if item.type == .text {
+                Button("Paste as Plain Text") {
+                    clipboardManager.pasteItemAsPlainText(item)
+                }
+            }
+            
+            Divider()
+            
             if item.type == .text, let str = item.content {
                 if let url = URL(string: str), url.scheme != nil, url.host != nil {
                     Button("Open in Browser") {

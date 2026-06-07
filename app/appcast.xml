@@ -3,16 +3,8 @@
     <channel>
         <title>ClipDeck</title>
         <item>
-            <title>2.2</title>
-            <pubDate>Sun, 07 Jun 2026 16:30:00 +0530</pubDate>
-            <sparkle:version>3</sparkle:version>
-            <sparkle:shortVersionString>2.2</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://raw.githubusercontent.com/whykush1/clipdeck/main/ClipDeck.dmg" length="7027683" type="application/octet-stream" sparkle:edSignature="IhOBE1Yt6INLfwHW/oj+euanjlwfXyGya/gXtqh4gkQwIdvfzrak6UqurKb2Y6ye+t3+Xgp5vBdbra0fAvLdCw=="/>
-        </item>
-        <item>
             <title>1.1</title>
-            <pubDate>Sat, 06 Jun 2026 11:21:46 +0530</pubDate>
+            <pubDate>Sat, 06 Jun 2026 11:20:55 +0530</pubDate>
             <sparkle:version>2</sparkle:version>
             <sparkle:shortVersionString>1.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>

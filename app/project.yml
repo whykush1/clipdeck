@@ -5,6 +5,9 @@ packages:
   KeyboardShortcuts:
     url: https://github.com/sindresorhus/KeyboardShortcuts
     from: 1.16.1
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.9.2
 targets:
   ClipDeck:
     type: application
@@ -13,8 +16,15 @@ targets:
     sources: [Sources]
     dependencies:
       - package: KeyboardShortcuts
+      - package: Sparkle
     info:
       path: Sources/Info.plist
       properties:
         LSUIElement: true
         NSPrincipalClass: NSApplication
+        CFBundleShortVersionString: "2.2"
+        CFBundleVersion: "2"
+        SUEnableAutomaticChecks: true
+        SUScheduledCheckInterval: 3600
+        SUPublicEDKey: "aIvyx+0/GNhurGtEX6oHwmZQ0Ti6StFBAM3QaeZJFtU="
+        SUFeedURL: "https://raw.githubusercontent.com/whykush1/clipdeck/main/appcast.xml"

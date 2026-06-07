@@ -119,8 +119,9 @@ class ClipboardManager: ObservableObject {
         
         if let item = newItem {
             if UserDefaults.standard.bool(forKey: "playSoundOnCopy") {
-                playSound("Glass")
+                playSound("CopySound")
             }
+            NotificationCenter.default.post(name: NSNotification.Name("ClipboardActionOccurred"), object: nil)
             DispatchQueue.main.async {
                 withAnimation {
                     let pinnedCount = self.history.filter({ $0.isPinned }).count
@@ -162,8 +163,9 @@ class ClipboardManager: ObservableObject {
     }
     func pasteItem(_ item: ClipboardItem) {
         if UserDefaults.standard.bool(forKey: "playSoundOnCopy") {
-            playSound("Pop")
+            playSound("CopySound")
         }
+        NotificationCenter.default.post(name: NSNotification.Name("ClipboardActionOccurred"), object: nil)
         // 1. Put it on the pasteboard
         pasteboard.clearContents()
         if item.type == .text, let str = item.content {
@@ -177,12 +179,47 @@ class ClipboardManager: ObservableObject {
             pasteboard.writeObjects([url as NSURL])
         }
         
+        // 2. Hide app or popover to return focus
+        let mode = UserDefaults.standard.string(forKey: "appMode") ?? "Menu Bar"
+        if mode == "Dock Window" {
+            NSApp.hide(nil)
+        } else {
+            NotificationCenter.default.post(name: NSNotification.Name("ClosePopover"), object: nil)
+        }
+        
+        // 3. Simulate Cmd+V
+        simulatePaste()
+    }
+    
+    func pasteItemAsPlainText(_ item: ClipboardItem) {
+        if UserDefaults.standard.bool(forKey: "playSoundOnCopy") {
+            playSound("CopySound")
+        }
+        NotificationCenter.default.post(name: NSNotification.Name("ClipboardActionOccurred"), object: nil)
+        
+        pasteboard.clearContents()
+        if item.type == .text, let str = item.content {
+            pasteboard.setString(str, forType: .string)
+            // Explicitly do not set RTF data
+        } else if item.type == .image, let url = item.imageURL, let img = NSImage(contentsOf: url) {
+            pasteboard.writeObjects([img])
+        } else if item.type == .file, let str = item.content, let url = URL(string: str) {
+            pasteboard.writeObjects([url as NSURL])
+        }
+        
+        let mode = UserDefaults.standard.string(forKey: "appMode") ?? "Menu Bar"
+        if mode == "Dock Window" {
+            NSApp.hide(nil)
+        } else {
+            NotificationCenter.default.post(name: NSNotification.Name("ClosePopover"), object: nil)
+        }
+        
+        simulatePaste()
+    }
+    
+    private func simulatePaste() {
         // Update lastChangeCount so we don't re-record our own paste
         lastChangeCount = pasteboard.changeCount
-        
-        // 2. Hide the popover explicitly
-        NotificationCenter.default.post(name: NSNotification.Name("ClosePopover"), object: nil)
-        NSApp.hide(nil)
         
         // Give it a tiny delay for the window to hide and the previous app to become active
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -240,8 +277,9 @@ class ClipboardManager: ObservableObject {
     
     func copyToClipboard(_ item: ClipboardItem) {
         if UserDefaults.standard.bool(forKey: "playSoundOnCopy") {
-            playSound("Glass")
+            playSound("CopySound")
         }
+        NotificationCenter.default.post(name: NSNotification.Name("ClipboardActionOccurred"), object: nil)
         pasteboard.clearContents()
         if item.type == .text, let str = item.content {
             pasteboard.setString(str, forType: .string)

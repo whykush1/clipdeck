@@ -27,7 +27,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var updaterController: SPUStandardUpdaterController!
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        UserDefaults.standard.register(defaults: ["historyLimit": 0])
+        UserDefaults.standard.register(defaults: [
+            "historyLimit": 0,
+            "playSoundOnCopy": true
+        ])
         // Enforce Single Instance
         let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: "dev.pythogen.ClipDeck")
         if runningApps.count > 1 {
@@ -39,6 +42,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+        updaterController.updater.checkForUpdatesInBackground()
         
         let modeStr = UserDefaults.standard.string(forKey: "appMode") ?? "Menu Bar"
         if modeStr == "Dock Window" {
@@ -94,6 +98,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             if let popover = self?.popover, popover.isShown {
                 popover.performClose(nil)
             }
+        }
+        
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("ClipboardActionOccurred"), object: nil, queue: .main) { [weak self] _ in
+            guard let button = self?.statusBarItem?.button else { return }
+            button.image = NSImage(systemSymbolName: "checkmark.circle.fill", accessibilityDescription: "Action Completed")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                button.image = NSImage(systemSymbolName: "clipboard.fill", accessibilityDescription: "ClipDeck")
+            }
+        }
+        
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("CheckForUpdates"), object: nil, queue: .main) { [weak self] _ in
+            self?.updaterController.checkForUpdates(nil)
         }
         
         if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {

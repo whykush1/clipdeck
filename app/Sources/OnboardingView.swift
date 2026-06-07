@@ -158,26 +158,31 @@ struct LoginItemStepView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Permissions")
+            Text("Launch at Login")
                 .font(.system(size: 20, weight: .bold))
             
-            Text("Please allow the following permission for Clipdeck to function:")
+            Text("Do you want ClipDeck to start automatically when you turn on your Mac? (You can change this later in Settings)")
                 .font(.body)
                 .multilineTextAlignment(.center)
             
-            Button("Open at login") {
-                toggleLoginItem()
+            HStack(spacing: 16) {
+                Button("No, skip") {
+                    if isEnabled { toggleLoginItem() } // Ensure it's off
+                    finishAction()
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(.secondary)
+                
+                Button("Yes, start automatically") {
+                    if !isEnabled { toggleLoginItem() } // Ensure it's on
+                    finishAction()
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(isEnabled ? .green : .blue)
+            .padding(.top, 10)
             
             Spacer()
-            
-            Button("Finish") {
-                finishAction()
-            }
-            .buttonStyle(.plain)
-            .foregroundColor(.secondary)
         }
         .padding(30)
     }
