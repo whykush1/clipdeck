@@ -23,7 +23,7 @@ targets:
         LSUIElement: true
         NSPrincipalClass: NSApplication
         CFBundleShortVersionString: "2.2"
-        CFBundleVersion: "2"
+        CFBundleVersion: "3"
         SUEnableAutomaticChecks: true
         SUScheduledCheckInterval: 3600
         SUPublicEDKey: "aIvyx+0/GNhurGtEX6oHwmZQ0Ti6StFBAM3QaeZJFtU="
