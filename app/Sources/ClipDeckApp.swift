@@ -1,6 +1,7 @@
 import SwiftUI
 import KeyboardShortcuts
 import Sparkle
+import Aptabase
 
 extension KeyboardShortcuts.Name {
     static let togglePopover = Self("togglePopover", default: .init(.v, modifiers: [.command, .shift]))
@@ -31,6 +32,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             "historyLimit": 0,
             "playSoundOnCopy": true
         ])
+        
+        Aptabase.shared.initialize(appKey: "A-EU-8033923024")
+        Aptabase.shared.trackEvent("app_launched")
+        
         // Enforce Single Instance
         let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: "dev.pythogen.ClipDeck")
         if runningApps.count > 1 {

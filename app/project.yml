@@ -8,6 +8,9 @@ packages:
   Sparkle:
     url: https://github.com/sparkle-project/Sparkle
     from: 2.9.2
+  Aptabase:
+    url: https://github.com/aptabase/aptabase-swift
+    from: 0.3.0
 targets:
   ClipDeck:
     type: application
@@ -17,13 +20,14 @@ targets:
     dependencies:
       - package: KeyboardShortcuts
       - package: Sparkle
+      - package: Aptabase
     info:
       path: Sources/Info.plist
       properties:
         LSUIElement: true
         NSPrincipalClass: NSApplication
-        CFBundleShortVersionString: "2.2"
-        CFBundleVersion: "3"
+        CFBundleShortVersionString: "2.3"
+        CFBundleVersion: "4"
         SUEnableAutomaticChecks: true
         SUScheduledCheckInterval: 3600
         SUPublicEDKey: "aIvyx+0/GNhurGtEX6oHwmZQ0Ti6StFBAM3QaeZJFtU="

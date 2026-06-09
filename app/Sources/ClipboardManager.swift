@@ -1,6 +1,7 @@
 import Cocoa
 import Combine
 import SwiftUI
+import Aptabase
 
 class ClipboardManager: ObservableObject {
     @Published var history: [ClipboardItem] = []
@@ -279,6 +280,7 @@ class ClipboardManager: ObservableObject {
         if UserDefaults.standard.bool(forKey: "playSoundOnCopy") {
             playSound("CopySound")
         }
+        Aptabase.shared.trackEvent("item_copied")
         NotificationCenter.default.post(name: NSNotification.Name("ClipboardActionOccurred"), object: nil)
         pasteboard.clearContents()
         if item.type == .text, let str = item.content {
