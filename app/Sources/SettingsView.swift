@@ -26,25 +26,17 @@ struct SettingsView: View {
                 VStack(alignment: .center, spacing: 12) {
                     Text("App Mode")
                         .font(.headline)
-                    HStack(spacing: 16) {
-                        ModeCardView(
-                            title: "Menu Bar",
-                            icon: "menubar.rectangle",
-                            isSelected: appMode == .menuBar
-                        ) {
-                            appMode = .menuBar
-                            NSApp.setActivationPolicy(.accessory)
+                    Picker("", selection: $appMode) {
+                        ForEach(AppMode.allCases) { mode in
+                            Text(mode.rawValue).tag(mode)
                         }
-                        
-                        ModeCardView(
-                            title: "Dock Window",
-                            icon: "macwindow",
-                            isSelected: appMode == .dock
-                        ) {
-                            appMode = .dock
-                            NSApp.setActivationPolicy(.regular)
-                            NSApp.activate(ignoringOtherApps: true)
-                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .controlSize(.large)
+                    .labelsHidden()
+                    .frame(width: 300)
+                    .onChange(of: appMode) { newValue in
+                        NotificationCenter.default.post(name: NSNotification.Name("AppModeChanged"), object: newValue)
                     }
                 }
                 .padding(.top, 24)
@@ -93,6 +85,7 @@ struct SettingsView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
+            .formStyle(.grouped)
             .padding()
             }
             .tabItem {
@@ -102,13 +95,22 @@ struct SettingsView: View {
             Form {
                 Text("Excluded Apps")
                     .font(.headline)
-                Text("ClipDeck will not save clipboard history when these apps are active.")
+                Text("Clipdeck will not save clipboard history when these apps are active.")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
                 List {
                     ForEach(excludedApps, id: \.self) { app in
-                        Text(app)
+                        HStack {
+                            if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: app) {
+                                Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+                                    .resizable()
+                                    .frame(width: 20, height: 20)
+                                Text(FileManager.default.displayName(atPath: url.path))
+                            } else {
+                                Text(app)
+                            }
+                        }
                     }
                     .onDelete { indexSet in
                         excludedApps.remove(atOffsets: indexSet)
@@ -145,6 +147,7 @@ struct SettingsView: View {
                     Spacer()
                 }
             }
+            .formStyle(.grouped)
             .padding()
             .onAppear {
                 loadExcludedApps()
@@ -169,33 +172,5 @@ struct SettingsView: View {
         if let encoded = try? JSONEncoder().encode(excludedApps) {
             excludedAppsData = encoded
         }
-    }
-}
-
-struct ModeCardView: View {
-    let title: String
-    let icon: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.system(size: 24))
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-            }
-            .frame(width: 120, height: 80)
-            .background(isSelected ? Color.accentColor.opacity(0.1) : Color.primary.opacity(0.05))
-            .foregroundColor(isSelected ? .accentColor : .primary)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(isSelected ? Color.accentColor : Color.primary.opacity(0.1), lineWidth: 2)
-            )
-            .cornerRadius(10)
-        }
-        .buttonStyle(.plain)
     }
 }

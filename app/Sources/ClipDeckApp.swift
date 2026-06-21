@@ -8,7 +8,7 @@ extension KeyboardShortcuts.Name {
 }
 
 @main
-struct ClipDeckApp: App {
+struct ClipdeckApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     var body: some Scene {
@@ -18,8 +18,30 @@ struct ClipDeckApp: App {
     }
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate {
-    var popover: NSPopover!
+class SidebarPanel: NSPanel {
+    override init(contentRect: NSRect, styleMask style: NSWindow.StyleMask, backing backingStoreType: NSWindow.BackingStoreType, defer flag: Bool) {
+        super.init(contentRect: contentRect, styleMask: style, backing: backingStoreType, defer: flag)
+        self.isFloatingPanel = true
+        self.level = .floating
+        self.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        self.titlebarAppearsTransparent = true
+        self.titleVisibility = .hidden
+        self.backgroundColor = .clear
+        self.isOpaque = false
+        self.hasShadow = true
+    }
+    
+    override var canBecomeKey: Bool {
+        return true
+    }
+    
+    override var canBecomeMain: Bool {
+        return true
+    }
+}
+
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
+    var sidebarPanel: SidebarPanel!
     var mainWindow: NSWindow!
     var statusBarItem: NSStatusItem!
     var onboardingWindow: NSWindow?
@@ -37,7 +59,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         Aptabase.shared.trackEvent("app_launched")
         
         // Enforce Single Instance
-        let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: "dev.pythogen.ClipDeck")
+        let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: "dev.pythogen.Clipdeck")
         if runningApps.count > 1 {
             if let existingApp = runningApps.first(where: { $0.processIdentifier != ProcessInfo.processInfo.processIdentifier }) {
                 existingApp.activate(options: [.activateIgnoringOtherApps])
@@ -49,18 +71,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
         updaterController.updater.checkForUpdatesInBackground()
         
-        let modeStr = UserDefaults.standard.string(forKey: "appMode") ?? "Menu Bar"
-        if modeStr == "Dock Window" {
-            NSApp.setActivationPolicy(.regular)
-        }
         
         let contentView = ContentView().environmentObject(clipboardManager)
         
-        let popover = NSPopover()
-        popover.contentSize = NSSize(width: 400, height: 600)
-        popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: contentView)
-        self.popover = popover
+        let screenRect = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1920, height: 1080)
+        let panelWidth: CGFloat = 400
+        
+        let panel = SidebarPanel(
+            contentRect: NSRect(x: screenRect.maxX - panelWidth, y: screenRect.minY, width: panelWidth, height: screenRect.height),
+            styleMask: [.nonactivatingPanel, .borderless],
+            backing: .buffered,
+            defer: false
+        )
+        panel.contentViewController = NSHostingController(rootView: contentView)
+        self.sidebarPanel = panel
         
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 400, height: 600),
@@ -69,17 +93,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             defer: false
         )
         window.center()
-        window.title = "ClipDeck"
+        window.title = "Clipdeck"
         window.contentView = NSHostingView(rootView: contentView)
         window.isReleasedWhenClosed = false
         self.mainWindow = window
         
+        let modeStr = UserDefaults.standard.string(forKey: "appMode") ?? "Menu Bar"
+        if modeStr == "Dock Window" {
+            NSApp.setActivationPolicy(.regular)
+            self.showMainWindow()
+        }
+        
         self.statusBarItem = NSStatusBar.system.statusItem(withLength: CGFloat(NSStatusItem.variableLength))
         
         if let button = self.statusBarItem.button {
-            button.image = NSImage(systemSymbolName: "clipboard.fill", accessibilityDescription: "ClipDeck")
-            button.action = #selector(statusBarButtonClicked(_:))
-            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+            button.image = NSImage(systemSymbolName: "clipboard.fill", accessibilityDescription: "Clipdeck")
+            button.action = #selector(statusBarLeftClicked(_:))
+            button.target = self
         }
         
         KeyboardShortcuts.onKeyUp(for: .togglePopover) { [weak self] in
@@ -87,34 +117,40 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             if mode == "Dock Window" {
                 self?.showMainWindow()
             } else {
-                self?.togglePopover(nil)
+                self?.toggleSidebar(nil)
             }
         }
         
         NotificationCenter.default.addObserver(forName: NSNotification.Name("ClosePopover"), object: nil, queue: .main) { [weak self] _ in
-            self?.popover.performClose(nil)
+            self?.closeSidebar()
         }
         
         NotificationCenter.default.addObserver(forName: NSNotification.Name("OpenSettings"), object: nil, queue: .main) { [weak self] _ in
             self?.openSettings()
         }
         
-        NotificationCenter.default.addObserver(forName: NSApplication.didResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
-            if let popover = self?.popover, popover.isShown {
-                popover.performClose(nil)
-            }
-        }
-        
         NotificationCenter.default.addObserver(forName: NSNotification.Name("ClipboardActionOccurred"), object: nil, queue: .main) { [weak self] _ in
             guard let button = self?.statusBarItem?.button else { return }
             button.image = NSImage(systemSymbolName: "checkmark.circle.fill", accessibilityDescription: "Action Completed")
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                button.image = NSImage(systemSymbolName: "clipboard.fill", accessibilityDescription: "ClipDeck")
+                button.image = NSImage(systemSymbolName: "clipboard.fill", accessibilityDescription: "Clipdeck")
             }
         }
         
         NotificationCenter.default.addObserver(forName: NSNotification.Name("CheckForUpdates"), object: nil, queue: .main) { [weak self] _ in
             self?.updaterController.checkForUpdates(nil)
+        }
+        
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("AppModeChanged"), object: nil, queue: .main) { [weak self] notification in
+            guard let mode = notification.object as? AppMode else { return }
+            if mode == .dock {
+                self?.closeSidebar()
+                NSApp.setActivationPolicy(.regular)
+                self?.showMainWindow()
+            } else {
+                self?.mainWindow?.orderOut(nil)
+                NSApp.setActivationPolicy(.accessory)
+            }
         }
         
         if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
@@ -151,28 +187,38 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
     
-    @objc func statusBarButtonClicked(_ sender: NSStatusBarButton) {
+    @objc func showRightClickMenu(with event: NSEvent) {
+        let menu = NSMenu()
+        menu.delegate = self
         let mode = UserDefaults.standard.string(forKey: "appMode") ?? "Menu Bar"
-        let event = NSApp.currentEvent!
-        if event.type == .rightMouseUp || event.modifierFlags.contains(.control) || mode == "Dock Window" {
-            let menu = NSMenu()
-            if mode == "Dock Window" {
-                menu.addItem(NSMenuItem(title: "Show Window", action: #selector(showMainWindow), keyEquivalent: ""))
-            }
-            menu.addItem(NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: ""))
-            menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
-            menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "Clear Unpinned History", action: #selector(clearHistoryFromMenu), keyEquivalent: ""))
-            menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "Quit ClipDeck", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
-            
-            statusBarItem.menu = menu
-            statusBarItem.button?.performClick(nil)
-            statusBarItem.menu = nil
-        } else {
-            togglePopover(sender)
+        if mode == "Dock Window" {
+            menu.addItem(NSMenuItem(title: "Show Window", action: #selector(showMainWindow), keyEquivalent: ""))
         }
+        menu.addItem(NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: ""))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Clear Unpinned History", action: #selector(clearHistoryFromMenu), keyEquivalent: ""))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Quit Clipdeck", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        
+        if let button = statusBarItem.button {
+            statusBarItem.menu = menu
+            button.performClick(nil)
+        }
+    }
+
+    @objc func statusBarLeftClicked(_ sender: NSStatusBarButton) {
+        let mode = UserDefaults.standard.string(forKey: "appMode") ?? "Menu Bar"
+        if mode == "Dock Window" {
+            showMainWindow()
+        } else {
+            toggleSidebar(sender)
+        }
+    }
+    
+    func menuDidClose(_ menu: NSMenu) {
+        statusBarItem.menu = nil
     }
     
     @objc func showMainWindow() {
@@ -188,15 +234,57 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         updaterController.checkForUpdates(nil)
     }
     
-    @objc func togglePopover(_ sender: AnyObject?) {
-        if let button = self.statusBarItem.button {
-            if self.popover.isShown {
-                self.popover.performClose(sender)
-            } else {
-                self.popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
-                self.popover.contentViewController?.view.window?.makeKey()
-            }
+    @objc func toggleSidebar(_ sender: AnyObject?) {
+        if sidebarPanel.isVisible {
+            closeSidebar()
+        } else {
+            showSidebar()
         }
+    }
+    
+    func showSidebar() {
+        guard let screen = NSScreen.main else { return }
+        let screenRect = screen.visibleFrame
+        let panelWidth: CGFloat = 400
+        
+        // Start off-screen to the right
+        let startFrame = NSRect(x: screenRect.maxX, y: screenRect.minY, width: panelWidth, height: screenRect.height)
+        let targetFrame = NSRect(x: screenRect.maxX - panelWidth, y: screenRect.minY, width: panelWidth, height: screenRect.height)
+        
+        if !sidebarPanel.isVisible {
+            sidebarPanel.setFrame(startFrame, display: false)
+            sidebarPanel.alphaValue = 0.0
+            sidebarPanel.makeKeyAndOrderFront(nil)
+        }
+        
+        NSApp.activate(ignoringOtherApps: true)
+        
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.25
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            sidebarPanel.animator().setFrame(targetFrame, display: true)
+            sidebarPanel.animator().alphaValue = 1.0
+        }, completionHandler: nil)
+    }
+    
+    func closeSidebar() {
+        guard let screen = NSScreen.main else {
+            sidebarPanel.orderOut(nil)
+            return
+        }
+        
+        let screenRect = screen.visibleFrame
+        let panelWidth: CGFloat = 400
+        let targetFrame = NSRect(x: screenRect.maxX, y: screenRect.minY, width: panelWidth, height: screenRect.height)
+        
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.25
+            context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            sidebarPanel.animator().setFrame(targetFrame, display: true)
+            sidebarPanel.animator().alphaValue = 0.0
+        }, completionHandler: {
+            self.sidebarPanel.orderOut(nil)
+        })
     }
     
     var settingsWindow: NSWindow?
@@ -229,10 +317,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if mode == "Dock Window" {
             showMainWindow()
         } else {
-            if !self.popover.isShown {
-                togglePopover(nil)
+            if !self.sidebarPanel.isVisible {
+                showSidebar()
             } else {
-                self.popover.contentViewController?.view.window?.makeKeyAndOrderFront(nil)
+                self.sidebarPanel.makeKeyAndOrderFront(nil)
                 NSApp.activate(ignoringOtherApps: true)
             }
         }

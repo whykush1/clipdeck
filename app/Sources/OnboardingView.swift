@@ -15,7 +15,7 @@ struct OnboardingView: View {
     
     var body: some View {
         ZStack {
-            VisualEffectView(material: .hudWindow, blendingMode: .behindWindow)
+            Color.clear.background(.ultraThinMaterial)
                 .ignoresSafeArea()
             
             Group {
@@ -161,7 +161,7 @@ struct LoginItemStepView: View {
             Text("Launch at Login")
                 .font(.system(size: 20, weight: .bold))
             
-            Text("Do you want ClipDeck to start automatically when you turn on your Mac? (You can change this later in Settings)")
+            Text("Do you want Clipdeck to start automatically when you turn on your Mac? (You can change this later in Settings)")
                 .font(.body)
                 .multilineTextAlignment(.center)
             

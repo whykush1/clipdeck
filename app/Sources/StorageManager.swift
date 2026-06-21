@@ -10,7 +10,7 @@ class StorageManager {
     
     var appSupportDirectory: URL {
         let paths = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)
-        let dir = paths[0].appendingPathComponent("dev.pythogen.ClipDeck")
+        let dir = paths[0].appendingPathComponent("dev.pythogen.Clipdeck")
         if !fileManager.fileExists(atPath: dir.path) {
             try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
         }
@@ -29,29 +29,34 @@ class StorageManager {
         appSupportDirectory.appendingPathComponent("history.json")
     }
     
-    var oldEncryptedHistoryFileURL: URL {
+    var encryptedHistoryFileURL: URL {
         appSupportDirectory.appendingPathComponent("history.enc")
     }
     
     func saveHistory(_ items: [ClipboardItem]) {
         do {
             let data = try JSONEncoder().encode(items)
-            try data.write(to: historyFileURL)
+            let key = KeychainHelper.shared.getEncryptionKey()
+            let sealedBox = try AES.GCM.seal(data, using: key)
+            if let encryptedData = sealedBox.combined {
+                try encryptedData.write(to: encryptedHistoryFileURL)
+            }
         } catch {
             print("Failed to save history: \(error)")
         }
     }
     
     func loadHistory() -> [ClipboardItem] {
-        // Try to load new unencrypted format first
+        // Migration: If unencrypted file exists, encrypt it and delete the old plaintext file
         if let data = try? Data(contentsOf: historyFileURL) {
             if let items = try? JSONDecoder().decode([ClipboardItem].self, from: data) {
+                saveHistory(items)
+                try? fileManager.removeItem(at: historyFileURL)
                 return items
             }
         }
         
-        // Fallback: migrate from old encrypted format
-        guard let encryptedData = try? Data(contentsOf: oldEncryptedHistoryFileURL) else {
+        guard let encryptedData = try? Data(contentsOf: encryptedHistoryFileURL) else {
             return []
         }
         
@@ -60,13 +65,10 @@ class StorageManager {
             let sealedBox = try AES.GCM.SealedBox(combined: encryptedData)
             let decryptedData = try AES.GCM.open(sealedBox, using: key)
             if let items = try? JSONDecoder().decode([ClipboardItem].self, from: decryptedData) {
-                // Successfully decrypted, so we save to new format and delete old encrypted file
-                saveHistory(items)
-                try? fileManager.removeItem(at: oldEncryptedHistoryFileURL)
                 return items
             }
         } catch {
-            print("Failed to decrypt history during migration: \(error)")
+            print("Failed to decrypt history: \(error)")
         }
         
         return []
@@ -108,7 +110,7 @@ class StorageManager {
 
 class KeychainHelper {
     static let shared = KeychainHelper()
-    private let keyTag = "dev.pythogen.ClipDeck.encryptionKey".data(using: .utf8)!
+    private let keyTag = "dev.pythogen.Clipdeck.encryptionKey".data(using: .utf8)!
     
     func getEncryptionKey() -> SymmetricKey {
         // Try to load existing key

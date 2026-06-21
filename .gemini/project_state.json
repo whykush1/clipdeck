@@ -1,0 +1,17 @@
+{
+  "project_name": "Clipdeck",
+  "project_type": "macos app",
+  "repository": {
+    "provider": "github",
+    "url": "https://github.com/whykush1/clipdeck"
+  },
+  "deployments": {},
+  "tech_stack": {
+    "frontend": "SwiftUI",
+    "styling": "SwiftUI",
+    "database": "UserDefaults / JSON"
+  },
+  "design_assets": {
+    "icon_folder": "./assets"
+  }
+}

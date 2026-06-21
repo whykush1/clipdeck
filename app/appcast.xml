@@ -1,14 +1,14 @@
 <?xml version="1.0" standalone="yes"?>
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
-        <title>ClipDeck</title>
+        <title>Clipdeck</title>
         <item>
             <title>1.1</title>
             <pubDate>Sat, 06 Jun 2026 11:20:55 +0530</pubDate>
             <sparkle:version>2</sparkle:version>
             <sparkle:shortVersionString>1.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://raw.githubusercontent.com/whykush1/clipdeck/main/ClipDeck.dmg" length="6676183" type="application/octet-stream" sparkle:edSignature="pHqspk0Nq57k7ItSv4nRGapiUY6u4cOY14bWEZR6eSlcKGfSfgBSZfV9j7tpEv2gZFa6oXYj1qfICLosRT19Bg=="/>
+            <enclosure url="https://raw.githubusercontent.com/whykush1/clipdeck/main/Clipdeck.dmg" length="6676183" type="application/octet-stream" sparkle:edSignature="pHqspk0Nq57k7ItSv4nRGapiUY6u4cOY14bWEZR6eSlcKGfSfgBSZfV9j7tpEv2gZFa6oXYj1qfICLosRT19Bg=="/>
         </item>
     </channel>
 </rss>

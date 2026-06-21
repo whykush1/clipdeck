@@ -1,4 +1,4 @@
-name: ClipDeck
+name: Clipdeck
 options:
   bundleIdPrefix: dev.pythogen
 packages:
@@ -12,10 +12,13 @@ packages:
     url: https://github.com/aptabase/aptabase-swift
     from: 0.3.0
 targets:
-  ClipDeck:
+  Clipdeck:
     type: application
     platform: macOS
     deploymentTarget: "14.0"
+    settings:
+      ARCHS: arm64
+      ONLY_ACTIVE_ARCH: NO
     sources: [Sources]
     dependencies:
       - package: KeyboardShortcuts
@@ -26,8 +29,8 @@ targets:
       properties:
         LSUIElement: true
         NSPrincipalClass: NSApplication
-        CFBundleShortVersionString: "2.3"
-        CFBundleVersion: "4"
+        CFBundleShortVersionString: "2.4"
+        CFBundleVersion: "5"
         SUEnableAutomaticChecks: true
         SUScheduledCheckInterval: 3600
         SUPublicEDKey: "aIvyx+0/GNhurGtEX6oHwmZQ0Ti6StFBAM3QaeZJFtU="

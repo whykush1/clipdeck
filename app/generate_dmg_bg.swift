@@ -16,7 +16,7 @@ context.setFillColor(red: 245/255.0, green: 245/255.0, blue: 247/255.0, alpha: 1
 context.fill(rect)
 
 // 2. Draw gradient text
-let text = "Drag ClipDeck to Applications"
+let text = "Drag Clipdeck to Applications"
 let font = NSFont.systemFont(ofSize: 28, weight: .bold)
 
 // We want to draw the text as a mask, then fill the gradient over the mask

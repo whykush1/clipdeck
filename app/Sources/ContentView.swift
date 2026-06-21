@@ -1,89 +1,149 @@
 import SwiftUI
 
+enum FilterType: String, CaseIterable {
+    case all = "All"
+    case text = "Text"
+    case links = "Links"
+    case images = "Images"
+}
+
 struct ContentView: View {
     @EnvironmentObject var clipboardManager: ClipboardManager
     @State private var searchText = ""
+    @State private var selectedFilter: FilterType = .all
     @AppStorage("isGridView") private var isGridView = false
     @State private var showingClearAlert = false
     
     var filteredHistory: [ClipboardItem] {
-        if searchText.isEmpty {
-            return clipboardManager.history
-        } else {
-            return clipboardManager.history.filter { item in
+        var items = clipboardManager.history
+        
+        // Filter by type
+        switch selectedFilter {
+        case .all:
+            break
+        case .text:
+            items = items.filter { $0.type == .text && !isLink($0) }
+        case .links:
+            items = items.filter { $0.type == .text && isLink($0) }
+        case .images:
+            items = items.filter { $0.type == .image }
+        }
+        
+        // Filter by search text
+        if !searchText.isEmpty {
+            items = items.filter { item in
                 item.content?.localizedCaseInsensitiveContains(searchText) == true
             }
         }
+        return items
+    }
+    
+    private func isLink(_ item: ClipboardItem) -> Bool {
+        guard let str = item.content, let url = URL(string: str) else { return false }
+        return url.scheme != nil && url.host != nil
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Text("ClipDeck")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                Spacer()
-                
-                Button(action: {
-                    withAnimation { isGridView.toggle() }
-                }) {
-                    Image(systemName: isGridView ? "list.bullet" : "square.grid.2x2")
-                        .foregroundColor(.secondary)
-                        .imageScale(.large)
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                Button(action: {
-                    showingClearAlert = true
-                }) {
-                    Image(systemName: "trash")
-                        .foregroundColor(.secondary)
-                        .imageScale(.large)
-                }
-                .buttonStyle(PlainButtonStyle())
-                .padding(.leading, 8)
-                .alert(isPresented: $showingClearAlert) {
-                    Alert(
-                        title: Text("Clear History?"),
-                        message: Text("This will permanently delete all your unpinned items. This action cannot be undone."),
-                        primaryButton: .destructive(Text("Clear All")) {
-                            clipboardManager.clearUnpinnedHistory()
-                        },
-                        secondaryButton: .cancel()
-                    )
-                }
-                
-                Button(action: {
-                    NotificationCenter.default.post(name: NSNotification.Name("OpenSettings"), object: nil)
-                }) {
-                    Image(systemName: "gear")
-                        .foregroundColor(.secondary)
-                        .imageScale(.large)
-                }
-                .buttonStyle(PlainButtonStyle())
-                .padding(.leading, 8)
-            }
-            .padding()
-            
-            // Search Bar
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                TextField("Search history...", text: $searchText)
-                    .textFieldStyle(PlainTextFieldStyle())
-                if !searchText.isEmpty {
-                    Button(action: { searchText = "" }) {
-                        Image(systemName: "xmark.circle.fill")
+            VStack(spacing: 16) {
+                // Header
+                HStack {
+                    Text("Clipdeck")
+                        .font(.system(.title, design: .serif))
+                        .fontWeight(.medium)
+                        .foregroundColor(.primary)
+                    Spacer()
+                    
+                    Button(action: {
+                        withAnimation { isGridView.toggle() }
+                    }) {
+                        Image(systemName: isGridView ? "list.bullet" : "square.grid.2x2")
+                            .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .buttonStyle(BorderlessButtonStyle())
+                    
+                    Button(action: {
+                        showingClearAlert = true
+                    }) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(BorderlessButtonStyle())
+                    .padding(.leading, 8)
+                    .alert(isPresented: $showingClearAlert) {
+                        Alert(
+                            title: Text("Clear History?"),
+                            message: Text("This will permanently delete all your unpinned items. This action cannot be undone."),
+                            primaryButton: .destructive(Text("Clear All")) {
+                                clipboardManager.clearUnpinnedHistory()
+                            },
+                            secondaryButton: .cancel()
+                        )
+                    }
+                    
+                    Menu {
+                        Button("Settings...") {
+                            NotificationCenter.default.post(name: NSNotification.Name("OpenSettings"), object: nil)
+                        }
+                        Button("Check for Updates...") {
+                            NotificationCenter.default.post(name: NSNotification.Name("CheckForUpdates"), object: nil)
+                        }
+                        Divider()
+                        Button("Quit Clipdeck") {
+                            NSApplication.shared.terminate(nil)
+                        }
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.secondary)
+                    }
+                    .menuStyle(BorderlessButtonMenuStyle())
+                    .fixedSize()
+                    .padding(.leading, 8)
+                    
+
                 }
+                .padding(.horizontal)
+                .padding(.top, 24)
+                
+                // Glass Pill Search Bar
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                        .font(.system(size: 16, weight: .semibold))
+                    TextField("Search history...", text: $searchText)
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                    if !searchText.isEmpty {
+                        Button(action: { searchText = "" }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.3))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+                )
+                .cornerRadius(24)
+                .padding(.horizontal)
+                
+                // Filter Segmented Control
+                Picker("Filter", selection: $selectedFilter) {
+                    ForEach(FilterType.allCases, id: \.self) { filter in
+                        Text(filter.rawValue).tag(filter)
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding(.horizontal)
+                .padding(.bottom, 8)
             }
-            .padding(8)
-            .background(Color(NSColor.controlBackgroundColor).opacity(0.6))
-            .cornerRadius(8)
-            .padding(.horizontal)
-            .padding(.bottom, 8)
             
             ScrollView {
                 if filteredHistory.isEmpty {
@@ -95,44 +155,32 @@ struct ContentView: View {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                         ForEach(filteredHistory) { item in
                             ClipboardItemView(item: item, isGrid: true)
+                                .transition(.asymmetric(insertion: .move(edge: .top).combined(with: .opacity), removal: .scale.combined(with: .opacity)))
                                 .onTapGesture { clipboardManager.pasteItem(item) }
                         }
                     }
+                    .animation(.spring(response: 0.4, dampingFraction: 0.7), value: filteredHistory)
                     .padding()
                 } else {
                     LazyVStack(spacing: 12) {
                         ForEach(filteredHistory) { item in
                             ClipboardItemView(item: item, isGrid: false)
+                                .transition(.asymmetric(insertion: .move(edge: .top).combined(with: .opacity), removal: .scale.combined(with: .opacity)))
                                 .onTapGesture { clipboardManager.pasteItem(item) }
                         }
                     }
+                    .animation(.spring(response: 0.4, dampingFraction: 0.7), value: filteredHistory)
                     .padding()
                 }
             }
         }
         .frame(minWidth: 400, minHeight: 600)
-        // Native macOS material background for a sleek Apple-like design
-        .background(VisualEffectView(material: .popover, blendingMode: .behindWindow).ignoresSafeArea())
+        // macOS 27 Golden Gate "Liquid Glass" ultraThinMaterial
+        .background(.regularMaterial)
     }
 }
 
-struct VisualEffectView: NSViewRepresentable {
-    var material: NSVisualEffectView.Material
-    var blendingMode: NSVisualEffectView.BlendingMode
-    
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
-        view.material = material
-        view.blendingMode = blendingMode
-        view.state = .active
-        return view
-    }
-    
-    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
-        nsView.material = material
-        nsView.blendingMode = blendingMode
-    }
-}
+
 
 struct ClipboardItemView: View {
     let item: ClipboardItem
@@ -172,26 +220,61 @@ struct ClipboardItemView: View {
                             .foregroundColor(item.isPinned ? .accentColor : .secondary)
                             .imageScale(.large)
                             .contentShape(Rectangle())
+                            .scaleEffect(item.isPinned ? 1.15 : 1.0)
+                            .animation(.spring(response: 0.3, dampingFraction: 0.5), value: item.isPinned)
                     }
                     .buttonStyle(PlainButtonStyle())
                     .transition(.opacity)
                 }
             }
             
-            Text(item.timestamp, style: .time)
-                .font(.caption)
-                .foregroundColor(.secondary)
+            HStack(spacing: 4) {
+                if let bundleID = item.sourceAppBundleID, 
+                   let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
+                    Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+                        .resizable()
+                        .frame(width: 14, height: 14)
+                }
+                
+                if let hexColor = item.detectedHexColor {
+                    Circle()
+                        .fill(hexColor)
+                        .frame(width: 12, height: 12)
+                        .overlay(Circle().stroke(Color.primary.opacity(0.2), lineWidth: 0.5))
+                        .padding(.leading, 4)
+                } else if item.isCodeSnippet {
+                    Text("</>")
+                        .font(.caption2.bold())
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 2)
+                        .background(Color.primary.opacity(0.1))
+                        .cornerRadius(4)
+                        .padding(.leading, 4)
+                }
+                
+                LiveTimeBadge(timestamp: item.timestamp, isHovering: isHovering)
+                    .padding(.leading, 4)
+            }
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(NSColor.controlBackgroundColor).opacity(isHovering ? 0.8 : 0.6))
-        .scaleEffect(isHovering ? 1.02 : 1.0)
+        .background(Color.primary.opacity(isHovering ? 0.05 : 0.02))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(item.isPinned ? Color.accentColor.opacity(0.5) : Color.primary.opacity(0.1), lineWidth: 1)
+                .stroke(item.isPinned ? Color.accentColor : Color.primary.opacity(isHovering ? 0.3 : 0.1), lineWidth: 1)
         )
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHovering)
+        .onDrag {
+            if item.type == .image, let url = item.imageURL {
+                return NSItemProvider(object: url as NSURL)
+            } else if item.type == .file, let str = item.content, let url = URL(string: str) {
+                return NSItemProvider(object: url as NSURL)
+            } else if let content = item.content {
+                return NSItemProvider(object: content as NSString)
+            }
+            return NSItemProvider()
+        }
         .contextMenu {
             Button("Paste") {
                 clipboardManager.pasteItem(item)
@@ -219,7 +302,7 @@ struct ClipboardItemView: View {
                 }
             } else if item.type == .image, let url = item.imageURL {
                 Button("Save Image to Desktop") {
-                    let dest = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask)[0].appendingPathComponent("ClipDeck_\(UUID().uuidString.prefix(8)).png")
+                    let dest = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask)[0].appendingPathComponent("Clipdeck_\(UUID().uuidString.prefix(8)).png")
                     try? FileManager.default.copyItem(at: url, to: dest)
                     NSWorkspace.shared.activateFileViewerSelecting([dest])
                 }
@@ -248,20 +331,6 @@ struct ClipboardItemView: View {
                 NSCursor.pop()
             }
         }
-        .contextMenu {
-            Button("Copy to Clipboard") {
-                clipboardManager.copyToClipboard(item)
-            }
-            if item.type == .text {
-                Button("Paste as Plain Text") {
-                    clipboardManager.pasteItem(item)
-                }
-            }
-            Divider()
-            Button("Delete") {
-                clipboardManager.deleteItem(item)
-            }
-        }
     }
 }
 
@@ -271,6 +340,7 @@ struct CustomLinkCardView: View {
     let url: URL
     @State private var title: String?
     @State private var icon: NSImage?
+    @State private var metadataProvider: LPMetadataProvider?
     
     var body: some View {
         HStack(spacing: 12) {
@@ -307,10 +377,15 @@ struct CustomLinkCardView: View {
         .onAppear {
             fetchMetadata()
         }
+        .onDisappear {
+            metadataProvider?.cancel()
+            metadataProvider = nil
+        }
     }
     
     func fetchMetadata() {
         let provider = LPMetadataProvider()
+        self.metadataProvider = provider
         // Timeout to prevent hanging
         provider.timeout = 5
         provider.startFetchingMetadata(for: url) { metadata, error in
@@ -401,6 +476,44 @@ extension Color {
         } else {
             return nil
         }
+    }
+}
+
+struct LiveTimeBadge: View {
+    let timestamp: Date
+    let isHovering: Bool
+    
+    var body: some View {
+        ZStack(alignment: .leading) {
+            (Text(timestamp, style: .relative) + Text(" ago"))
+                .opacity(isHovering ? 0 : 1)
+            Text(timestamp, style: .time)
+                .opacity(isHovering ? 1 : 0)
+        }
+        .animation(.easeInOut(duration: 0.2), value: isHovering)
+        .font(.caption)
+        .foregroundColor(.secondary)
+    }
+}
+
+extension ClipboardItem {
+    var detectedHexColor: Color? {
+        guard type == .text, let str = content else { return nil }
+        let regex = "^#([0-9a-fA-F]{3}){1,2}$"
+        if str.trimmingCharacters(in: .whitespacesAndNewlines).range(of: regex, options: .regularExpression) != nil {
+            return Color(hex: str.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        return nil
+    }
+    
+    var isCodeSnippet: Bool {
+        guard type == .text, let str = content else { return false }
+        let codeKeywords = ["func ", "class ", "struct ", "import ", "const ", "let ", "var ", "<div>", "<html>", "public static"]
+        var count = 0
+        for keyword in codeKeywords {
+            if str.contains(keyword) { count += 1 }
+        }
+        return count >= 1 || (str.contains("{") && str.contains("}") && str.split(separator: "\n").count > 1)
     }
 }
 
