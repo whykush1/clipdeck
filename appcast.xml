@@ -8,7 +8,7 @@
             <sparkle:version>5</sparkle:version>
             <sparkle:shortVersionString>2.4</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://raw.githubusercontent.com/whykush1/clipdeck/main/ClipDeck.dmg" length="7083272" type="application/octet-stream" sparkle:edSignature="vQjKnahwIQfgHyPLJsPH7Jc/DIO6u0CBJFxlgOgkEOgN63VYVS2i30UMzRPuiBN7dWSz4h5WmFKgFCr9yRyVAw=="/>
+            <enclosure url="https://raw.githubusercontent.com/whykush1/clipdeck/main/ClipDeck.dmg" length="6746275" type="application/octet-stream" sparkle:edSignature="D58F4JraVPVBWiVE9VvmbsB73aYZvoujLxboKCzSyNTWMv+p+6tcO1aKcD3AVpTxExgj7rfNL8Kh46GqTly+Cw=="/>
         </item>
         <item>
             <title>2.3</title>
