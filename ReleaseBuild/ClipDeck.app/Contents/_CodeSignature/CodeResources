@@ -10,7 +10,7 @@
 		</data>
 		<key>Resources/Aptabase_Aptabase.bundle/Contents/Info.plist</key>
 		<data>
-		iODKJhTrzfAMrikII8LiT3W02L4=
+		IpmI24De2irCcETAo6wtQmS9xTY=
 		</data>
 		<key>Resources/Aptabase_Aptabase.bundle/Contents/Resources/PrivacyInfo.xcprivacy</key>
 		<data>
@@ -26,7 +26,7 @@
 		</data>
 		<key>Resources/KeyboardShortcuts_KeyboardShortcuts.bundle/Contents/Info.plist</key>
 		<data>
-		ShfBQiCnZ7fwzLI8iBdt43Fu6c8=
+		mlHaV/qaMIHr6YgDycM0yhILawo=
 		</data>
 		<key>Resources/KeyboardShortcuts_KeyboardShortcuts.bundle/Contents/Resources/ar.lproj/Localizable.strings</key>
 		<dict>
@@ -170,10 +170,10 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			JvaBWIYbiJMeLsxeJ/3FNI9TLYY=
+			Kmh/VeUBvdtMx7HjoahCiCQqfUY=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"26f68158861b88931e2ecc5e27fdc5348f532d86" or cdhash H"0b1e9c7e96057b1462b82d63be1a6e0c42f936f1"</string>
+			<string>cdhash H"2a687f55e501bddb4cc7b1e3a1a84288242a7d46" or cdhash H"eeb95b3d81a6d47029aa590a37d0ed1ae1b03ac6"</string>
 		</dict>
 		<key>Resources/AppIcon.icns</key>
 		<dict>
@@ -186,7 +186,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			dybvSWocgH7DbNOU7HB8MCiQdnrC2gyKCfznZSu5whM=
+			vThuDpDDKtFCs2f274ubwZDWQGR1m1SgZQLt9MXx8ME=
 			</data>
 		</dict>
 		<key>Resources/Aptabase_Aptabase.bundle/Contents/Resources/PrivacyInfo.xcprivacy</key>
@@ -214,7 +214,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			5N4O9idM3310iD795Yh9I8MKRHM8lWTdyDmeZyMjpKY=
+			+J+JWa0k5NCB0un+pmAFBhXSBZoAnnnyIlpJu7AQWeI=
 			</data>
 		</dict>
 		<key>Resources/KeyboardShortcuts_KeyboardShortcuts.bundle/Contents/Resources/ar.lproj/Localizable.strings</key>
